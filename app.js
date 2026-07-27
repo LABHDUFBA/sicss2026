@@ -18,7 +18,7 @@
         <div class="slide-grid" aria-hidden="true"></div>
         <header class="slide-head">
           <p class="eyebrow">${slide.kicker || ''}</p>
-          <p class="source-tag">${slide.source || ''}</p>
+          <p class="source-tag">slide ${index + 1}/${window.SLIDES.length}</p>
         </header>
         <div class="slide-body">${slide.html}</div>
         <footer class="slide-foot">

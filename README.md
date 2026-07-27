@@ -31,9 +31,9 @@ Total: 26 slides.
 ## Arquivos
 
 - `index.html`: casca do deck
-- `styles.css`: sistema visual e impressão
-- `slides.js`: conteúdo estruturado
-- `app.js`: navegação, persistência e visão geral
+- `styles.css`: sistema visual e impressão; tipografia Inter e cards com cantos arredondados
+- `slides.js`: conteúdo estruturado e metadados internos de proveniência
+- `app.js`: navegação, persistência, visão geral e numeração dinâmica `slide N/26`
 - `assets/`: logos e figuras locais
 - `sources/`: decks recebidos, preservados para rastreabilidade
 
