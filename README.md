@@ -20,13 +20,13 @@ O slide atual fica salvo no navegador. Links diretos usam `#slide-N`.
 
 ## Estrutura do conteúdo
 
-1. Abertura — SICSS e apresentadores
-2. Trajetória — slides 1–4 de `pineb`
-3. RAG e Social-RAG — slides 2–17 de `social-rag`
+1. Abertura — SICSS, apresentadores e logo do LABHDUFBA
+2. Percurso — RAG, agentes e impactos epistemológicos
+3. RAG e Social-RAG — slides 5–17 de `social-rag`
 4. Agentes e epistemologia — slides 12–21 de `pineb`
 5. Encerramento — contatos e projetos
 
-Total: 32 slides.
+Total: 26 slides.
 
 ## Arquivos
 

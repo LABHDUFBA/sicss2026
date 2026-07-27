@@ -129,6 +129,14 @@ strong { color: var(--ink); }
 .cover .source-tag, .section-slide .source-tag, .closing .source-tag { color: rgba(255,255,255,.65); }
 .cover .slide-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(420px, .55fr); gap: 90px; align-items: center; }
 .cover .title-block { align-self: center; }
+.cover-logo {
+  display: block;
+  width: 126px;
+  height: 126px;
+  margin: 0 0 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 0.5px rgba(255,255,255,.7));
+}
 .cover h1 { max-width: 1280px; font-size: 118px; }
 .cover .subtitle { max-width: 1200px; font-size: 34px; line-height: 1.35; color: #ccd4df; }
 .event-block { align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding-left: 54px; border-left: 2px solid rgba(255,255,255,.28); }
@@ -137,6 +145,11 @@ strong { color: var(--ink); }
 .speaker { padding-top: 22px; border-top: 1px solid rgba(255,255,255,.24); }
 .speaker b { display: block; color: var(--white); font: 700 34px/1.1 var(--serif); }
 .speaker span, .speaker a { display: block; margin-top: 8px; color: #cbd4df; font-size: 19px; line-height: 1.35; }
+
+.agenda .card { min-height: 410px; }
+.agenda .card h3 { font-family: var(--serif); font-size: 38px; letter-spacing: -.01em; text-transform: none; }
+.agenda .card p { font-size: 27px; }
+.agenda-thesis { margin-top: 52px; padding-top: 28px; border-top: 2px solid var(--ink); }
 
 .section-slide .slide-body { display: grid; grid-template-columns: 320px 1fr; gap: 90px; align-items: center; }
 .section-number { color: var(--accent-soft); font: 700 220px/.75 var(--serif); letter-spacing: -.08em; }
