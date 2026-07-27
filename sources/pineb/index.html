@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antropologia Digital, RAG e Agentes na Pesquisa</title>
+  <link rel="stylesheet" href="vendor/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Ajustes específicos desta apresentação */
+
+    /* Timeline da trajetória LABHD */
+    .traj-row {
+      display: grid; grid-template-columns: 130px 1fr;
+      gap: 26px; align-items: start; margin-top: 26px;
+    }
+    .traj-year {
+      font-size: 46px; font-weight: 800; color: var(--c-accent);
+      line-height: 1; letter-spacing: -0.02em;
+      border-right: 4px solid var(--c-line); padding-right: 22px;
+    }
+    .traj-year .ty-tag {
+      display: block; font-size: 13px; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--c-blue-600); margin-top: 10px;
+    }
+    .traj-body p { font-size: 25px; line-height: 1.5; margin: 0 0 14px; }
+
+    /* mini-timeline horizontal (slide 6) */
+    .mini-time { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 30px; }
+    .mini-time .mt-step {
+      background: var(--c-paper); border: 1px solid var(--c-line);
+      border-top: 4px solid var(--c-blue-300);
+      border-radius: 10px; padding: 14px 12px;
+    }
+    .mini-time .mt-step.now { border-top-color: var(--c-accent); }
+    .mini-time .mt-yr { font-size: 15px; font-weight: 800; color: var(--c-blue-600); letter-spacing: 0.06em; }
+    .mini-time .mt-lb { font-size: 16px; color: var(--c-ink); margin-top: 6px; line-height: 1.3; }
+
+    /* cartões de conceito (definições) */
+    .concept-grid { display: grid; gap: 16px; margin-top: 24px; }
+    .concept-grid.c2 { grid-template-columns: 1fr 1fr; }
+    .concept-grid.c3 { grid-template-columns: repeat(3, 1fr); }
+    .concept-card {
+      background: var(--c-paper); border: 1px solid var(--c-line);
+      border-left: 4px solid var(--c-blue-600);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .concept-card .cc-h { font-size: 21px; font-weight: 800; color: var(--c-blue-800); margin-bottom: 8px; }
+    .concept-card .cc-b { font-size: 17px; color: var(--c-ink); line-height: 1.45; }
+    .concept-card.accent { border-left-color: var(--c-accent); }
+    .concept-card.accent .cc-h { color: var(--c-accent); }
+
+    /* loop cards (human-in/on/out) */
+    .loop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 26px; }
+    .loop-card {
+      background: var(--c-paper); border: 1px solid var(--c-line);
+      border-top: 5px solid var(--c-blue-600);
+      border-radius: 12px; padding: 22px 20px;
+    }
+    .loop-card.mid { border-top-color: var(--c-amber); }
+    .loop-card.out { border-top-color: var(--c-accent); }
+    .loop-card .lc-tag {
+      display: inline-block; font-size: 13px; font-weight: 800;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 6px; margin-bottom: 12px;
+      color: var(--c-blue-600); background: var(--c-blue-100);
+    }
+    .loop-card.mid .lc-tag { color: var(--c-amber); background: #f7efdc; }
+    .loop-card.out .lc-tag { color: var(--c-accent); background: var(--c-accent-soft); }
+    .loop-card .lc-name { font-size: 24px; font-weight: 800; color: var(--c-blue-800); margin-bottom: 10px; }
+    .loop-card .lc-body { font-size: 17px; color: var(--c-ink); line-height: 1.45; }
+    .loop-card .lc-meta { margin-top: 12px; font-size: 15px; color: var(--c-muted); }
+
+    /* code-ish badge inline */
+    .reveal code {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+      font-size: 0.82em; background: #e9edf2;
+      color: var(--c-blue-800);
+      padding: 2px 7px; border-radius: 5px;
+    }
+
+    /* pipeline reusada do template */
+    .pipeline-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 28px; }
+    .pipeline-step {
+      background: var(--c-paper); border: 1px solid var(--c-line);
+      border-top: 4px solid var(--c-blue-600);
+      border-radius: 10px; padding: 18px 14px;
+    }
+    .pipeline-step .ps-num {
+      font-size: 14px; font-weight: 800; letter-spacing: 0.1em;
+      color: var(--c-blue-600); text-transform: uppercase;
+    }
+    .pipeline-step .ps-name { font-size: 22px; font-weight: 800; color: var(--c-blue-800); margin-top: 6px; }
+    .pipeline-step .ps-desc { font-size: 16px; color: var(--c-muted); margin-top: 8px; line-height: 1.4; }
+
+    .result-card {
+      background: var(--c-paper); border: 1px solid var(--c-line);
+      border-left: 5px solid var(--c-blue-600);
+      border-radius: 10px; padding: 18px 22px; margin-top: 18px;
+    }
+    .result-card.accent { border-left-color: var(--c-accent); }
+    .result-card .r-title { font-size: 19px; font-weight: 800; color: var(--c-blue-800); margin-bottom: 6px; }
+    .result-card .r-body { font-size: 17px; color: var(--c-ink); line-height: 1.45; }
+
+    /* diagrama concêntrico IA ⊃ ML ⊃ DL ⊃ LLMs */
+    .ai-nest { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center; margin-top: 24px; }
+    .ai-l1, .ai-l2, .ai-l3, .ai-l4 {
+      border-radius: 16px; position: relative;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .ai-l1 { background: var(--c-blue-900); padding: 18px 18px 22px; }
+    .ai-l2 { background: var(--c-blue-800); padding: 16px 16px 20px; width: 100%; margin-top: 10px; }
+    .ai-l3 { background: var(--c-blue-600); padding: 16px 16px 20px; width: 100%; margin-top: 10px; }
+    .ai-l4 { background: var(--c-accent); padding: 16px; width: 100%; margin-top: 10px; }
+    .ai-nest .lbl { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+    .ai-l1 > .lbl { color: #c9d6e6; }
+    .ai-l4 .lbl { font-size: 22px; }
+    .ai-legend .leg { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; margin-bottom: 16px; }
+    .ai-legend .dot { width: 18px; height: 18px; border-radius: 5px; margin-top: 4px; }
+    .ai-legend .leg-h { font-size: 19px; font-weight: 800; color: var(--c-blue-800); }
+    .ai-legend .leg-b { font-size: 15.5px; color: var(--c-muted); line-height: 1.4; }
+
+    /* módulos de agente (Control / Perception / Action) */
+    .agent-mods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .agent-mod { background: var(--c-paper); border: 1px solid var(--c-line); border-radius: 12px; padding: 18px 18px; }
+    .agent-mod.center { border: 2px solid var(--c-accent); }
+    .agent-mod .am-h { font-size: 18px; font-weight: 800; color: var(--c-blue-800); margin-bottom: 12px; text-align: center; letter-spacing: 0.03em; }
+    .agent-mod.center .am-h { color: var(--c-accent); }
+    .agent-mod .am-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .agent-mod .chip { font-size: 14px; font-weight: 700; color: var(--c-blue-800); background: #e9edf2; border-radius: 6px; padding: 6px 12px; }
+    .agent-mod .am-sub { font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-blue-600); margin: 10px 0 6px; text-align: center; }
+
+    /* tokenização */
+    .token-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .token { background: var(--c-blue-100); border: 1px solid var(--c-blue-300); border-radius: 8px; padding: 8px 14px; font-size: 20px; color: var(--c-blue-900); }
+    .token .tid { display: block; font-size: 11px; color: var(--c-blue-600); font-family: "SF Mono", Menlo, monospace; }
+
+    /* grid de estatísticas */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
+    .stat { background: var(--c-paper); border: 1px solid var(--c-line); border-top: 4px solid var(--c-blue-600); border-radius: 10px; padding: 18px 14px; text-align: center; }
+    .stat.accent { border-top-color: var(--c-accent); }
+    .stat .st-num { font-size: 34px; font-weight: 800; color: var(--c-blue-800); line-height: 1; }
+    .stat.accent .st-num { color: var(--c-accent); }
+    .stat .st-lb { font-size: 14px; color: var(--c-muted); margin-top: 8px; line-height: 1.3; }
+
+    /* gramática do Telegram / fluxo simples */
+    .flow-row { display: flex; align-items: stretch; gap: 10px; margin-top: 24px; }
+    .flow-node { flex: 1; background: var(--c-paper); border: 1px solid var(--c-line); border-radius: 10px; padding: 16px 12px; text-align: center; }
+    .flow-node .fn-h { font-size: 18px; font-weight: 800; color: var(--c-blue-800); }
+    .flow-node .fn-b { font-size: 14px; color: var(--c-muted); margin-top: 6px; line-height: 1.35; }
+    .flow-arrow { display: flex; align-items: center; color: var(--c-blue-300); font-size: 26px; font-weight: 800; }
+
+    /* QR na capa */
+    .cover-qr {
+      position: absolute; right: 64px; bottom: 54px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      z-index: 5;
+    }
+    .cover-qr img {
+      width: 132px; height: 132px; display: block;
+      background: #fff; padding: 8px; border-radius: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+    }
+    .cover-qr span {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #c9d6e6;
+    }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============ BLOCO 1 — TRAJETÓRIA LABHD/UFBA ============ -->
+
+    <!-- 1 · CAPA -->
+    <section data-state="cover" class="slide-cover">
+      <div class="cover-tag">Palestra · LABHD-UFBA</div>
+      <h1>Antropologia Digital, RAG e Agentes na Pesquisa</h1>
+      <div class="cover-rule"></div>
+      <p class="cover-sub">Agência, epistemologia e <em>human-in-the-loop</em> — uma trajetória da pesquisa social digital ao paradigma dos agentes</p>
+      <div class="cover-logos"><img src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA"></div>
+      <div class="cover-qr">
+        <img src="assets/qrcode.png" alt="QR code para a apresentação online">
+        <span>slides online</span>
+      </div>
+    </section>
+
+    <!-- 2 · MARCO ZERO 2012 -->
+    <section class="content">
+      <div class="slide-kicker">Trajetória · marco zero</div>
+      <h2 class="slide-title">2012 — A análise qualitativa entra no computador</h2>
+      <div class="slide-body">
+        <div class="traj-row">
+          <div class="traj-year">2012<span class="ty-tag">Atlas.ti</span></div>
+          <div class="traj-body">
+            <p>Início com <strong>Atlas.ti</strong>: codificação e análise qualitativa assistida por software (CAQDAS). O dado social continuava o mesmo — entrevistas, documentos, notas de campo — mas a <span class="hl-red">organização e a recuperação</span> passaram a ser mediadas por software.</p>
+            <p>Primeira pergunta de fundo: <em>o que significa digitalizar a pesquisa social?</em></p>
+          </div>
+        </div>
+        <div class="callout">
+          Digitalizar não é só transpor papel para a tela: é introduzir uma <strong>camada técnica de mediação</strong> entre o pesquisador e seu material — o embrião de tudo que vem depois.
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · DIGITAÇÃO DA VIDA SOCIAL 2014-2018 -->
+    <section class="content">
+      <div class="slide-kicker">Trajetória · o campo se desloca</div>
+      <h2 class="slide-title">2014–2018 — A Digitalização do Eu na Vida Cotidiana</h2>
+      <div class="slide-body">
+        <div class="traj-row">
+          <div class="traj-year">2014<span class="ty-tag">→ 2018</span></div>
+          <div class="traj-body">
+            <p style="font-size:25px;line-height:1.45;">As tecnologias digitais passam a ocupar <span class="hl-red">todos os âmbitos da vida social</span> e se tornam um <strong>fato social total</strong>.</p>
+            <div class="callout" style="margin-top:18px;font-size:24px;line-height:1.4;">
+              <span class="quote-mark" style="font-size:50px;line-height:0.2;">“</span>o digital está se tornando uma parte constitutiva daquilo que nos torna humanos.” <span style="font-size:17px;color:var(--c-muted);">(Horst &amp; Miller, 2012, p. 4)</span>
+            </div>
+          </div>
+        </div>
+        <div class="source-line">
+          HORST, H. A.; MILLER, D. <em>Digital Anthropology</em>. London: Bloomsbury Academic, 2012.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · VIRADA COMPUTACIONAL ~2018 -->
+    <section class="content">
+      <div class="slide-kicker">Trajetória · virada computacional</div>
+      <h2 class="slide-title">2018 — Da ferramenta fechada ao código aberto</h2>
+      <div class="slide-body">
+        <div class="traj-row">
+          <div class="traj-year">2018<span class="ty-tag">R · código</span></div>
+          <div class="traj-body">
+            <p>Aprendizado de <strong>R</strong> e da programação como método. A virada decisiva: deixar de <em>apenas usar</em> ferramentas para <span class="hl-red">criar as próprias ferramentas</span> — do software caixa-preta ao <strong>código aberto, auditável e reprodutível</strong>.</p>
+            <p>Uma escada de aprendizado: <strong>utilidade → aprendizado → aprimoramento → diversificação → artesanato digital</strong>.</p>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Não há neutralidade metodológica nas técnicas</strong> <em>(Bourdieu, Passeron &amp; Chamboredon, 2004)</em> — programar é posição epistemológica: <strong>erros de código viram erros metodológicos</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · ERA DOS LLMs ~2023 -->
+    <section class="content">
+      <div class="slide-kicker">Trajetória · infraestrutura de linguagem</div>
+      <h2 class="slide-title">2023 — Os LLMs como infraestrutura de pesquisa</h2>
+      <div class="slide-body">
+        <div class="traj-row">
+          <div class="traj-year">2023<span class="ty-tag">LLMs</span></div>
+          <div class="traj-body">
+            <p>Modelos de linguagem deixam de ser objeto de estudo para se tornarem <strong>infraestrutura</strong> do trabalho de pesquisa.</p>
+            <p>Um fluxo contínuo se consolida:
+              <strong>texto → código → análise → escrita assistida</strong>. O LLM atravessa todas as etapas, da exploração do corpus à redação.</p>
+          </div>
+        </div>
+        <div class="callout">
+          A questão deixa de ser <em>“como analisar dados digitais?”</em> e passa a ser <em>“como pesquisar quando a própria linguagem se tornou computável?”</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · DE LLMs A AGENTES ~2024-25 -->
+    <section class="content">
+      <div class="slide-kicker">Trajetória · onde estamos</div>
+      <h2 class="slide-title">2024–25 — De LLMs a Agentes</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:30px;max-width:30em;">Agentes <span class="hl">não são novos</span> — mas a fusão <span class="hl">LLM + agente</span> redefine a <span class="hl-red">agência</span> na pesquisa: o pesquisador <strong>delega, supervisiona e co-cria</strong>.</p>
+        <div class="mini-time">
+          <div class="mt-step"><div class="mt-yr">2012</div><div class="mt-lb">Atlas.ti · CAQDAS</div></div>
+          <div class="mt-step"><div class="mt-yr">2014–18</div><div class="mt-lb">Vida Social Digitalizada</div></div>
+          <div class="mt-step"><div class="mt-yr">2018</div><div class="mt-lb">R · código aberto</div></div>
+          <div class="mt-step"><div class="mt-yr">2023</div><div class="mt-lb">LLMs como infra</div></div>
+          <div class="mt-step now"><div class="mt-yr">2024–25</div><div class="mt-lb">Agentes na pesquisa</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BLOCO 2 — IA GENERATIVA, LLMs E RAG ============ -->
+
+    <!-- DIVISOR 01 -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">01</div>
+      <h2>IA generativa, LLMs e RAG</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">Os conceitos de base — da definição de IA à geração ancorada em evidência, até as ferramentas de NLP do LABHD-UFBA.</div>
+    </section>
+
+    <!-- 7 · O QUE É IA -->
+    <section class="content">
+      <div class="slide-kicker">Fundamentos</div>
+      <h2 class="slide-title">O que é Inteligência Artificial?</h2>
+      <div class="slide-body">
+        <div class="ai-nest">
+          <div class="ai-l1">
+            <span class="lbl">Inteligência Artificial</span>
+            <div class="ai-l2">
+              <span class="lbl">Machine Learning</span>
+              <div class="ai-l3">
+                <span class="lbl">Deep Learning · Redes Neurais</span>
+                <div class="ai-l4"><span class="lbl">LLMs</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="ai-legend">
+            <div class="leg"><div class="dot" style="background:var(--c-blue-900);"></div><div><div class="leg-h">IA</div><div class="leg-b">Máquinas “inteligentes”, em sentido amplo.</div></div></div>
+            <div class="leg"><div class="dot" style="background:var(--c-blue-800);"></div><div><div class="leg-h">Machine Learning</div><div class="leg-b">Reconhecimento de padrões aprendidos a partir de dados.</div></div></div>
+            <div class="leg"><div class="dot" style="background:var(--c-blue-600);"></div><div><div class="leg-h">Deep Learning</div><div class="leg-b">Padrões em dados <strong>não-estruturados</strong>: imagem, texto, áudio.</div></div></div>
+            <div class="leg"><div class="dot" style="background:var(--c-accent);"></div><div><div class="leg-h">LLMs</div><div class="leg-b">Aprendem a “compreender” e gerar <strong>linguagem natural</strong>.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · O QUE É IA GENERATIVA -->
+    <section class="content">
+      <div class="slide-kicker">Fundamentos</div>
+      <h2 class="slide-title">O que é IA Generativa?</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:32px;max-width:26em;">Modelos que <span class="hl">produzem</span> conteúdo novo a partir de <span class="hl">padrões estatísticos</span> aprendidos de grandes corpora.</p>
+        <div class="callout" style="margin-top:30px;">
+          Um modelo generativo <strong>não “entende”</strong> no sentido humano: ele estima a <strong>distribuição de probabilidade</strong> do que vem a seguir e amostra dela uma saída plausível.
+        </div>
+        <div class="source-line">
+          Implicação metodológica: a saída é <em>verossímil</em>, não necessariamente <em>verdadeira</em>. Plausibilidade ≠ veracidade — daí a necessidade de ancoragem em evidência (RAG) e de supervisão humana.
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · O QUE SÃO LLMs -->
+    <section class="content">
+      <div class="slide-kicker">Fundamentos</div>
+      <h2 class="slide-title">O que são Modelos de Linguagem (LLMs)?</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:26px;max-width:34em;margin-bottom:4px;">O treino envolve a <span class="hl">tokenização</span> das palavras, transformando-as em <span class="hl-red">embeddings</span> — representações numéricas que capturam significado e contexto.</p>
+        <div class="token-row">
+          <div class="token">O<span class="tid">219195</span></div>
+          <div class="token">arquiteto<span class="tid">26887</span></div>
+          <div class="token">não<span class="tid">213002</span></div>
+          <div class="token">reiniciou<span class="tid">267358</span></div>
+          <div class="token">o<span class="tid">219195</span></div>
+          <div class="token">servidor<span class="tid">281596</span></div>
+          <div class="token">porque<span class="tid">252197</span></div>
+          <div class="token">ele<span class="tid">104265</span></div>
+          <div class="token">estava<span class="tid">119840</span></div>
+          <div class="token">com<span class="tid">76912</span></div>
+          <div class="token">preguiça<span class="tid">254276</span></div>
+        </div>
+        <div class="callout" style="margin-top:22px;">
+          No espaço de <em>embeddings</em>, sentidos próximos ficam próximos (cão · gato · cavalo) — mas a previsão é <strong>estatística</strong>: daí <strong>alucinação</strong> e <strong>viés</strong> como propriedades do mecanismo, não bugs.
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 · O QUE É RAG -->
+    <section class="content">
+      <div class="slide-kicker">Retrieval-Augmented Generation</div>
+      <h2 class="slide-title">O que é RAG, em três etapas</h2>
+      <div class="slide-body">
+        <div class="pipeline-flow" style="grid-template-columns:repeat(3,1fr);gap:22px;">
+          <div class="pipeline-step">
+            <div class="ps-num">01 · Recuperação</div>
+            <div class="ps-name">Buscar evidência</div>
+            <div class="ps-desc">A pergunta recupera, de uma base de conhecimento, os <strong>documentos semanticamente relevantes</strong>.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">02 · Aumento</div>
+            <div class="ps-name">Injetar no prompt</div>
+            <div class="ps-desc">Os trechos recuperados são <strong>inseridos no contexto</strong> enviado ao LLM, junto da pergunta.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">03 · Geração</div>
+            <div class="ps-name">Responder ancorado</div>
+            <div class="ps-desc">O LLM gera a resposta <strong>condicionada à evidência fornecida</strong>, com trechos citáveis.</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:30px;">
+          <strong>RAG ≠ busca:</strong> é <em>geração condicionada</em> a uma base de conhecimento. Ao vincular cada afirmação a um trecho recuperável, reduz a alucinação e torna o LLM um <strong>instrumento auditável</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · FERRAMENTAS DE NLP DO LABHD -->
+    <section class="content">
+      <div class="slide-kicker">Aplicação · ferramentas em ação</div>
+      <h2 class="slide-title">Do texto à estrutura: o que o LABHD usa</h2>
+      <div class="slide-body">
+        <div class="concept-grid c2">
+          <div class="concept-card">
+            <div class="cc-h">NER · Reconhecimento de entidades</div>
+            <div class="cc-b">Identifica e classifica automaticamente <strong>pessoas, organizações, locais, datas e eventos</strong> em grandes volumes textuais.</div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">Topic Modelling</div>
+            <div class="cc-b">Revela <strong>temas latentes</strong> agrupando palavras associadas (ex.: <em>Manifesto Comunista</em> → luta de classes · propriedade · indústria).</div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">Knowledge Graph</div>
+            <div class="cc-b">Rede semântica de <strong>entidades e relações</strong> (<code>SUPPORTS</code> / <code>OPPOSES</code>) — usada p/ mapear polarização política. <em>LLMGraphTransformer + gpt-4o-mini</em>.</div>
+          </div>
+          <div class="concept-card accent">
+            <div class="cc-h">RAG</div>
+            <div class="cc-b">Geração <strong>ancorada</strong> em base documental — resposta rastreável e auditável sobre corpora grandes demais p/ leitura exaustiva.</div>
+          </div>
+        </div>
+        <div class="source-line">
+          Eixos de classificação: <strong>tarefa</strong> (extração · modelagem · geração) · <strong>nível</strong> (codificação · exploração · interpretação) · <strong>pipeline</strong> (coleta · codificação · análise).
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BLOCO 3 — AGENTES NA PESQUISA ============ -->
+
+    <!-- DIVISOR 02 -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">02</div>
+      <h2>Agentes na pesquisa</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">O que muda quando o LLM ganha ferramentas, memória e autonomia — e como a agência se redistribui.</div>
+    </section>
+
+    <!-- 12 · O QUE SÃO AGENTES -->
+    <section class="content">
+      <div class="slide-kicker">Fundamentos</div>
+      <h2 class="slide-title">O que são Agentes?</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:25px;max-width:36em;margin-bottom:2px;">Um <span class="hl">LLM-agente</span> acopla um modelo de linguagem a <span class="hl-red">módulos</span> de controle, percepção e ação — planeja, age sobre o mundo e revê o resultado em ciclo.</p>
+        <div class="agent-mods">
+          <div class="agent-mod">
+            <div class="am-h">Controle</div>
+            <div class="am-sub">Storage</div>
+            <div class="am-row"><span class="chip">Memória</span><span class="chip">Base de conhecimento</span></div>
+            <div class="am-sub">Decisão</div>
+            <div class="am-row"><span class="chip">Planejamento</span><span class="chip">Raciocínio</span></div>
+          </div>
+          <div class="agent-mod center">
+            <div class="am-h">LLM-Agente</div>
+            <div class="am-row" style="margin-top:6px;"><span class="chip">raciocínio + ferramentas + memória</span></div>
+            <div class="am-sub" style="margin-top:14px;">⇅ Humano</div>
+            <div class="am-row"><span class="chip">delega · supervisiona · valida</span></div>
+          </div>
+          <div class="agent-mod">
+            <div class="am-h">Percepção & Ação</div>
+            <div class="am-sub">Perception</div>
+            <div class="am-row"><span class="chip">Coleta</span><span class="chip">Processamento</span></div>
+            <div class="am-sub">Action</div>
+            <div class="am-row"><span class="chip">Ferramentas</span><span class="chip">Feedback</span></div>
+          </div>
+        </div>
+        <div class="source-line">
+          Agentes <strong>precedem os LLMs</strong> (sistemas especialistas, bots, multiagente); a fusão LLM+agente é que redefine a agência. <em>Arquitetura: Synthetic Agents — arXiv 2503.05659.</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 · AGENTES NO LABHD -->
+    <section class="content">
+      <div class="slide-kicker">Aplicação</div>
+      <h2 class="slide-title">A pesquisa do LABHD, em escala</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:23px;max-width:40em;margin-bottom:4px;">Objeto: o <span class="hl-red">ecossistema multiplataforma de desinformação e radicalização</span> no Brasil (Telegram → YouTube, Instagram, WhatsApp…). Três fases, 2021–2027, com Letícia Cesarino (UFSC) · InternetLab · CNPq · PECS/ISC.</p>
+        <div class="stat-grid">
+          <div class="stat"><div class="st-num">+70M</div><div class="st-lb">mensagens coletadas (2015–2025)</div></div>
+          <div class="stat"><div class="st-num">5M</div><div class="st-lb">imagens e vídeos</div></div>
+          <div class="stat"><div class="st-num">3M</div><div class="st-lb">links do YouTube</div></div>
+          <div class="stat accent"><div class="st-num">30 TB</div><div class="st-lb">de dados</div></div>
+        </div>
+        <div class="callout" style="margin-top:22px;">
+          É aqui que NER, topic modelling, knowledge graphs, RAG e agentes <strong>coletam, classificam, sumarizam e analisam</strong> — sob coordenação de times qualitativo e quantitativo (grounded theory, populismo · EDA, NLP, IA).
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 · AGÊNCIA DISTRIBUÍDA -->
+    <section class="content">
+      <div class="slide-kicker">Tese central</div>
+      <h2 class="slide-title">Agência distribuída</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:34px;max-width:24em;">O pesquisador <span class="hl-red">não é substituído</span>: a agência se <span class="hl">redistribui</span> entre humano e máquina.</p>
+        <div class="callout" style="margin-top:30px;">
+          O agente <strong>não “decide” sozinho</strong> — opera dentro de <strong>guardrails</strong> definidos pelo pesquisador: escopo, critérios, pontos de validação. A autoria e a responsabilidade permanecem humanas.
+        </div>
+        <div class="source-line">
+          Deslocamento do <em>fazer</em> para o <em>orientar e validar</em>: a competência metodológica migra para o desenho dos limites em que a máquina pode agir.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BLOCO 4 — CONSIDERAÇÕES EPISTEMOLÓGICAS ============ -->
+
+    <!-- DIVISOR 03 -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">03</div>
+      <h2>Considerações epistemológicas</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">Crítica dos dados e das ferramentas, o lugar do humano no ciclo e os limites de matematizar o sentido.</div>
+    </section>
+
+    <!-- 15 · CSS CRÍTICA — POR QUE O HUMANO IMPORTA -->
+    <section class="content">
+      <div class="slide-kicker">Ciência social computacional crítica</div>
+      <h2 class="slide-title">Por que o humano importa: três frentes críticas</h2>
+      <div class="slide-body">
+        <div class="concept-grid c3">
+          <div class="concept-card">
+            <div class="cc-h">Crítica dos dados</div>
+            <div class="cc-b"><strong>“Raw data is an oxymoron.”</strong> Todo dado tem condições de existência e uma história — exige o mesmo rigor de uma fonte de arquivo. <em>Gitelman, 2013 · Brasil &amp; Nascimento, 2020</em></div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">Crítica das ferramentas</div>
+            <div class="cc-b"><strong>Erros de código viram erros metodológicos.</strong> “Assistentes digitais já contêm teoria e julgamento.” <em>Rieder &amp; Röhle, 2012</em></div>
+          </div>
+          <div class="concept-card accent">
+            <div class="cc-h">Teoria + empiria</div>
+            <div class="cc-b">Teorizar como prática: abstração, abdução e indução em pequenos projetos empíricos. <em>Ignatow, 2020</em></div>
+          </div>
+        </div>
+        <div class="callout">
+          RAG e agentes <strong>não são neutros</strong> — incorporam teoria e decisões. Manter o humano no loop é o que preserva a crítica dos dados e das ferramentas.
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 · HUMAN IN/ON/OUT THE LOOP -->
+    <section class="content">
+      <div class="slide-kicker">Definições e trade-offs</div>
+      <h2 class="slide-title">Human in · on · out of the loop</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:22px;max-width:44em;margin-bottom:0;">A distinção clássica gradua <em>quanto</em> de humano permanece no ciclo de <span class="hl">decidir e agir</span>.</p>
+        <div class="loop-grid">
+          <div class="loop-card">
+            <div class="lc-tag">In the loop</div>
+            <div class="lc-name">No ciclo</div>
+            <div class="lc-body">A máquina só <strong>decide e age com um comando humano</strong>. Nada avança sem confirmação.</div>
+            <div class="lc-meta">↑ Transparência total · ↓ não escala (gargalo humano)</div>
+          </div>
+          <div class="loop-card mid">
+            <div class="lc-tag">On the loop</div>
+            <div class="lc-name">Sobre o ciclo</div>
+            <div class="lc-body">A máquina decide e age sob a <strong>supervisão de um operador que pode anular</strong> suas ações.</div>
+            <div class="lc-meta">Equilíbrio: escala com controle seletivo</div>
+          </div>
+          <div class="loop-card out">
+            <div class="lc-tag">Out of the loop</div>
+            <div class="lc-name">Fora do ciclo — o problema</div>
+            <div class="lc-body">A máquina decide e age <strong>sem qualquer entrada ou interação humana</strong>.</div>
+            <div class="lc-meta">↑ Escala máxima · ↓ risco epistêmico (alucinação, viés, opacidade)</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:18px;">
+          Não há posição “correta” em abstrato — a escolha do loop é uma <strong>decisão metodológica</strong>, função do risco da tarefa. Mas, nas ciências sociais, o <em>out-of-the-loop</em> é um <strong>problema epistemológico</strong>: delegar a interpretação é abrir mão do que define a disciplina.
+        </div>
+        <div class="source-line">
+          Taxonomia adaptada de Human Rights Watch, <em>Losing Humanity</em> (2012) — da decisão letal à decisão interpretativa.
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 · MATEMATIZAR O SENTIDO -->
+    <section class="content">
+      <div class="slide-kicker">O limite epistemológico</div>
+      <h2 class="slide-title">É possível matematizar o sentido?</h2>
+      <div class="slide-body">
+        <p class="lead">Embeddings transformam significado em <span class="hl">vetores</span>. Mas o que é “<span class="hl-red">significado</span>” num modelo estatístico?</p>
+        <div class="concept-grid c3" style="margin-top:24px;">
+          <div class="concept-card">
+            <div class="cc-h">A promessa</div>
+            <div class="cc-b">Operacionalizar sentido em escala — comparar, agrupar e recuperar milhões de textos.</div>
+          </div>
+          <div class="concept-card accent">
+            <div class="cc-h">O risco</div>
+            <div class="cc-b"><strong>Redução da complexidade discursiva</strong>: o que não cabe no vetor desaparece da análise.</div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">A resposta</div>
+            <div class="cc-b">Leitura <strong>crítica e contextualizada</strong> das descobertas automatizadas — o humano no loop.</div>
+          </div>
+        </div>
+        <div class="source-line">
+          <em>“A revolução das modalidades de produção e de transmissão dos textos é também uma mutação epistemológica fundamental.”</em> — Chartier, 2002, p. 108.
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 · VELHOS NOVOS DESAFIOS -->
+    <section class="content">
+      <div class="slide-kicker">Balanço</div>
+      <h2 class="slide-title"><s style="color:var(--c-muted);text-decoration-color:var(--c-accent);">Velhos</s> Novos desafios</h2>
+      <div class="slide-body">
+        <div class="concept-grid c2">
+          <div class="concept-card">
+            <div class="cc-h">Teóricos</div>
+            <div class="cc-b">Que conceitos sociológicos sobrevivem quando o objeto e o método são reconstituídos digitalmente?</div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">Metodológicos</div>
+            <div class="cc-b">Validação, reprodutibilidade e crítica das ferramentas — “erros de código viram erros metodológicos”.</div>
+          </div>
+          <div class="concept-card">
+            <div class="cc-h">Financeiros</div>
+            <div class="cc-b">Custo de cômputo, armazenamento (30&nbsp;TB) e APIs — quem banca a infraestrutura da pesquisa?</div>
+          </div>
+          <div class="concept-card accent">
+            <div class="cc-h">Epistemológicos</div>
+            <div class="cc-b">O sentido matematizável e o lugar do humano: onde a interpretação é indelegável.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19 · SÍNTESE -->
+    <section class="content">
+      <div class="slide-kicker">Síntese</div>
+      <h2 class="slide-title">Reconfiguração, não automação</h2>
+      <div class="slide-body">
+        <span class="quote-mark">“</span>
+        <p class="lead">A pesquisa digital não é a <span class="hl-red">automação</span> da pesquisa — é a <span class="hl">reconfiguração da agência</span> entre humano e máquina.</p>
+        <div class="callout" style="margin-top:24px;">
+          O desafio não é escolher <em>se</em> usar agentes, mas manter o <strong>humano no loop certo, no momento certo</strong> — onde o julgamento, a responsabilidade e a interpretação são indelegáveis.
+        </div>
+        <div class="source-line">
+          Em 2023: <em>“never send a human to do a robot's job.”</em> Em 2025, a pergunta se inverte — não <em>o que</em> automatizar, mas <strong>onde o humano é indelegável</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 · ENCERRAMENTO -->
+    <section data-state="section" class="slide-end">
+      <h2>Obrigado!</h2>
+      <div class="end-rule"></div>
+      <div class="end-contacts">
+        <b>Leonardo F. Nascimento</b><br>
+        Prof. UFBA · Coord. LABHDUFBA · Analista de dados CADE · Bolsista IPEA<br>
+        leofn3@gmail.com · <b>leofn.com</b> · github.com/leofn
+      </div>
+      <div class="end-logos"><img src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA"></div>
+    </section>
+
+  </div>
+
+  <footer class="deck-footer">
+    <div class="foot-left"><b>Antropologia Digital, RAG e Agentes</b> — LABHD-UFBA</div>
+    <img class="foot-logos" src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA">
+  </footer>
+</div>
+
+<script src="vendor/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.6,
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    controlsTutorial: false
+  });
+
+  function updateChrome() {
+    const s = Reveal.getCurrentSlide();
+    const bare = s && (s.classList.contains('slide-cover') ||
+                       s.classList.contains('slide-section') ||
+                       s.classList.contains('slide-end'));
+    document.querySelector('.reveal').classList.toggle('no-chrome', !!bare);
+  }
+  Reveal.on('ready', updateChrome);
+  Reveal.on('slidechanged', updateChrome);
+</script>
+</body>
+</html>

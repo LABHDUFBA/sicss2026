@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social-RAG — Pipeline RAG para pesquisa em ciências sociais computacionais</title>
+  <link rel="stylesheet" href="vendor/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Ajustes específicos para esta apresentação */
+    .author-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 18px; margin-top: 24px;
+    }
+    .author-card {
+      background: var(--c-paper);
+      border: 1px solid var(--c-line);
+      border-left: 4px solid var(--c-blue-600);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .author-card .a-name {
+      font-size: 20px; font-weight: 800; color: var(--c-blue-800);
+      line-height: 1.25;
+    }
+    .author-card .a-org {
+      font-size: 16px; color: var(--c-muted); margin-top: 6px; line-height: 1.4;
+    }
+    .author-card.lead { border-left-color: var(--c-accent); }
+    .author-card.lead .a-tag {
+      display: inline-block; font-size: 12px; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--c-accent); margin-bottom: 6px;
+    }
+
+    .pipeline-flow {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 12px; margin-top: 28px;
+    }
+    .pipeline-step {
+      background: var(--c-paper);
+      border: 1px solid var(--c-line);
+      border-top: 4px solid var(--c-blue-600);
+      border-radius: 10px;
+      padding: 18px 14px;
+      position: relative;
+    }
+    .pipeline-step .ps-num {
+      font-size: 14px; font-weight: 800; letter-spacing: 0.1em;
+      color: var(--c-blue-600); text-transform: uppercase;
+    }
+    .pipeline-step .ps-name {
+      font-size: 22px; font-weight: 800; color: var(--c-blue-800);
+      margin-top: 6px;
+    }
+    .pipeline-step .ps-desc {
+      font-size: 16px; color: var(--c-muted); margin-top: 8px; line-height: 1.4;
+    }
+
+    .design-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 22px; margin-top: 28px;
+    }
+    .design-card {
+      background: var(--c-paper);
+      border: 1px solid var(--c-line);
+      border-radius: 12px;
+      padding: 22px 20px;
+    }
+    .design-card .d-tag {
+      display: inline-block;
+      font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--c-accent); background: var(--c-accent-soft);
+      padding: 4px 10px; border-radius: 6px; margin-bottom: 12px;
+    }
+    .design-card .d-name {
+      font-size: 23px; font-weight: 800; color: var(--c-blue-800);
+      margin-bottom: 10px;
+    }
+    .design-card .d-body {
+      font-size: 17px; color: var(--c-ink); line-height: 1.5;
+    }
+    .design-card code {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+      font-size: 15px; background: #e9edf2;
+      color: var(--c-blue-800);
+      padding: 2px 7px; border-radius: 5px;
+    }
+
+    .model-table {
+      width: 100%; border-collapse: collapse; margin-top: 24px;
+      font-size: 20px;
+    }
+    .model-table thead th {
+      text-align: left; padding: 12px 14px;
+      background: var(--c-blue-800); color: #fff;
+      font-weight: 700; font-size: 16px; letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .model-table tbody td {
+      padding: 14px; border-bottom: 1px solid var(--c-line);
+      vertical-align: top;
+    }
+    .model-table tbody tr:nth-child(odd) td { background: var(--c-paper); }
+    .model-table .m-id {
+      font-weight: 800; color: var(--c-accent);
+      font-size: 26px;
+    }
+    .model-table .m-name {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+      font-size: 17px; color: var(--c-blue-800);
+    }
+
+    .criteria-list {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px 28px; margin-top: 20px;
+    }
+    .criteria-list .crit {
+      display: grid; grid-template-columns: 28px 1fr; gap: 12px;
+      align-items: start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--c-line);
+    }
+    .criteria-list .crit-num {
+      font-size: 15px; font-weight: 800; color: var(--c-blue-600);
+      letter-spacing: 0.06em;
+      padding-top: 2px;
+    }
+    .criteria-list .crit-name {
+      font-size: 17px; font-weight: 700; color: var(--c-blue-800);
+    }
+    .criteria-list .crit-desc {
+      font-size: 15px; color: var(--c-muted); margin-top: 3px; line-height: 1.4;
+    }
+
+    .result-card {
+      background: var(--c-paper);
+      border: 1px solid var(--c-line);
+      border-left: 5px solid var(--c-blue-600);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-top: 18px;
+    }
+    .result-card.accent { border-left-color: var(--c-accent); }
+
+    /* Diagrama de pipeline completo */
+    .arch-diagram {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .arch-phase {
+      background: var(--c-paper);
+      border: 1px solid var(--c-line);
+      border-radius: 12px;
+      padding: 14px 14px 18px;
+      position: relative;
+    }
+    .arch-phase .ap-head {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 10px; margin-bottom: 12px;
+      border-bottom: 2px solid var(--c-line);
+    }
+    .arch-phase .ap-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 6px;
+      background: var(--c-blue-800); color: #fff;
+      font-size: 15px; font-weight: 800;
+    }
+    .arch-phase .ap-title {
+      font-size: 16px; font-weight: 800;
+      color: var(--c-blue-800);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .arch-phase.accent .ap-num { background: var(--c-accent); }
+    .arch-phase.accent .ap-title { color: var(--c-accent); }
+
+    .arch-box {
+      background: #fff;
+      border: 1px solid var(--c-line);
+      border-radius: 8px;
+      padding: 9px 12px;
+      margin-bottom: 6px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .arch-box b { color: var(--c-blue-800); font-size: 15.5px; }
+    .arch-box code {
+      font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+      font-size: 13.5px; background: #e9edf2;
+      color: var(--c-blue-800);
+      padding: 1px 6px; border-radius: 4px;
+    }
+    .arch-box .ab-tag {
+      display: inline-block;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--c-blue-600); margin-bottom: 3px;
+    }
+    .arch-phase.accent .arch-box .ab-tag { color: var(--c-accent); }
+    .arch-arrow {
+      text-align: center;
+      color: var(--c-blue-300);
+      font-size: 12px;
+      margin: 1px 0;
+      line-height: 0.9;
+    }
+    .arch-out {
+      margin-top: 14px;
+      background: var(--c-blue-100);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14.5px;
+      color: var(--c-blue-900);
+      line-height: 1.4;
+    }
+    .arch-out b { color: var(--c-blue-800); }
+    .arch-streamlit {
+      margin-top: 12px;
+      background: linear-gradient(135deg, var(--c-blue-800) 0%, var(--c-blue-600) 100%);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 15px;
+    }
+    .arch-streamlit b { font-size: 17px; letter-spacing: 0.04em; }
+    .arch-streamlit .as-desc { color: #c9d6e6; font-size: 14px; max-width: 70%; }
+    .result-card .r-title {
+      font-size: 19px; font-weight: 800; color: var(--c-blue-800);
+      margin-bottom: 6px;
+    }
+    .result-card .r-body {
+      font-size: 17px; color: var(--c-ink); line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- 1 · CAPA -->
+    <section data-state="cover" class="slide-cover">
+      <div class="cover-tag">Manuscrito · Primeira edição</div>
+      <h1>Social-RAG</h1>
+      <div class="cover-rule"></div>
+      <p class="cover-sub">Um <em>pipeline</em> de <em>Retrieval-Augmented Generation</em> para pesquisa em ciências sociais computacionais sobre o Telegram</p>
+      <div class="cover-logos"><img src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA"></div>
+    </section>
+
+    <!-- 2 · AUTORES -->
+    <section class="content">
+      <div class="slide-kicker">Autoria</div>
+      <h2 class="slide-title">Equipe de autores</h2>
+      <div class="slide-body">
+        <div class="author-grid">
+          <div class="author-card">
+            <div class="a-name">Leonardo Nascimento</div>
+            <div class="a-org">Universidade Federal da Bahia (UFBA)</div>
+          </div>
+          <div class="author-card">
+            <div class="a-name">Eric Brasil</div>
+            <div class="a-org">UNILAB — Instituto de Humanidades e Letras, São Francisco do Conde/BA</div>
+          </div>
+          <div class="author-card">
+            <div class="a-name">Arthur Lima</div>
+            <div class="a-org">Universidade Federal da Bahia (UFBA)</div>
+          </div>
+          <div class="author-card">
+            <div class="a-name">Gabriel Andrade</div>
+            <div class="a-org">Universidade Federal da Bahia (UFBA)</div>
+          </div>
+          <div class="author-card">
+            <div class="a-name">Ricardo Sodré Andrade</div>
+            <div class="a-org">Arquivo Nacional — Escritório Regional Nordeste, Salvador/BA</div>
+          </div>
+          <div class="author-card">
+            <div class="a-name">Tarssio Barreto</div>
+            <div class="a-org">Ministério da Saúde, Brasília/DF</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · MOTIVAÇÃO -->
+    <section class="content">
+      <div class="slide-kicker">Ponto de partida</div>
+      <h2 class="slide-title">Escala desafia a leitura exaustiva</h2>
+      <div class="slide-body">
+        <span class="quote-mark">“</span>
+        <p class="lead">
+          Dados de <span class="hl">rastros digitais</span> expandiram as possibilidades empíricas nas ciências sociais — e intensificaram um desafio metodológico de <span class="hl">escala</span>: corpora <span class="hl-red">grandes demais e rápidos demais</span> para serem lidos exaustivamente sem sacrificar o rigor interpretativo.
+        </p>
+        <div class="source-line">
+          Volume, velocidade e heterogeneidade dos dados produzidos pelas plataformas digitais sobrecarregam a capacidade analítica das abordagens sociais tradicionais.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · OBJETIVO / PROPOSTA -->
+    <section class="content">
+      <div class="slide-kicker">Proposta</div>
+      <h2 class="slide-title">O que é o Social-RAG</h2>
+      <div class="slide-body">
+        <p class="lead" style="font-size:34px;">
+          Uma arquitetura <span class="hl">RAG modular</span> projetada para <span class="hl">investigação qualitativa em larga escala</span> sobre corpora textuais — preservando <span class="hl-red">rastreabilidade de evidências</span>, auditabilidade e controle do pesquisador.
+        </p>
+        <div class="callout" style="margin-top:34px;">
+          Camada de mediação técnica que <strong>expande a capacidade exploratória</strong> do pesquisador quando o corpus excede o alcance da leitura exaustiva — sem substituir a leitura crítica.
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · DIVISOR — RAG -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">01</div>
+      <h2>RAG: definição e estrutura</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">Retrieval-Augmented Generation — princípio, três etapas e por que ancora a geração em evidência verificável.</div>
+    </section>
+
+    <!-- 6 · RAG: 3 ETAPAS -->
+    <section class="content">
+      <div class="slide-kicker">Retrieval-Augmented Generation</div>
+      <h2 class="slide-title">Como funciona um RAG, em três etapas</h2>
+      <div class="slide-body">
+        <div class="pipeline-flow" style="grid-template-columns:repeat(3,1fr);gap:22px;">
+          <div class="pipeline-step">
+            <div class="ps-num">01 · Indexação</div>
+            <div class="ps-name">Vetorização do corpus</div>
+            <div class="ps-desc">Os documentos são divididos em <em>chunks</em> e convertidos em vetores por um modelo de <em>embeddings</em>, armazenados em uma base vetorial otimizada para busca por similaridade.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">02 · Recuperação</div>
+            <div class="ps-name">Busca semântica</div>
+            <div class="ps-desc">A pergunta do pesquisador é projetada no mesmo espaço vetorial; o sistema localiza passagens <strong>semanticamente próximas</strong>, mesmo sem coincidência lexical com a query.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">03 · Geração</div>
+            <div class="ps-name">Síntese ancorada</div>
+            <div class="ps-desc">As passagens recuperadas são combinadas à pergunta em um <em>prompt</em> que instrui o LLM a responder <strong>com base na evidência fornecida</strong>, preservando trechos citáveis.</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:30px;">
+          A principal contribuição do RAG está no <strong>aterramento factual</strong>: ao vincular cada afirmação a um trecho recuperável, o LLM deixa de operar como <em>“stochastic parrot”</em> e passa a funcionar como um <strong>instrumento de pesquisa auditável</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · DIVISOR — SOCIAL-RAG -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">02</div>
+      <h2>Arquitetura do Social-RAG</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">Pipeline modular, corpora analisados e as três decisões de projeto que sustentam o sistema.</div>
+    </section>
+
+    <!-- 8 · PIPELINE -->
+    <section class="content">
+      <div class="slide-kicker">Arquitetura</div>
+      <h2 class="slide-title">Pipeline modular em cinco etapas</h2>
+      <div class="slide-body">
+        <div class="pipeline-flow">
+          <div class="pipeline-step">
+            <div class="ps-num">01</div>
+            <div class="ps-name">Vetorização</div>
+            <div class="ps-desc"><code style="font-size:13px;">text-embedding-3-large</code> (OpenAI) — espaço semântico de alta dimensionalidade.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">02</div>
+            <div class="ps-name">Indexação</div>
+            <div class="ps-desc">ChromaDB com algoritmo HNSW — busca aproximada de vizinhos em milissegundos.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">03</div>
+            <div class="ps-name">Recuperação</div>
+            <div class="ps-desc">Estratégia <strong>Adaptive-K</strong>: corte dinâmico na curva de similaridade.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">04</div>
+            <div class="ps-name">Reranking</div>
+            <div class="ps-desc"><strong>MMR</strong> (Maximal Marginal Relevance) — equilibra relevância e diversidade.</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="ps-num">05</div>
+            <div class="ps-name">Geração</div>
+            <div class="ps-desc"><em>System prompt</em> em estrutura <em>thread-of-thought</em>, ancorado nos trechos recuperados.</div>
+          </div>
+        </div>
+        <div class="source-line" style="margin-top:28px;">
+          <strong>Stack:</strong> Python · LangChain · Ollama (modelos locais e cloud open-weight) · OpenAI API · ChromaDB · pandas · FastAPI · Streamlit.
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · PIPELINE COMPLETO -->
+    <section class="content">
+      <div class="slide-kicker">Visão end-to-end</div>
+      <h2 class="slide-title">Pipeline completo: do Telegram à resposta auditável</h2>
+      <div class="slide-body">
+        <div class="arch-diagram">
+
+          <!-- FASE 01 · COLETA -->
+          <div class="arch-phase">
+            <div class="ap-head">
+              <span class="ap-num">1</span>
+              <span class="ap-title">Coleta & preparação</span>
+            </div>
+            <div class="arch-box">
+              <span class="ab-tag">Origem</span>
+              <b>Telegram</b> — grupos e canais públicos (posicionamento <em>lurker</em>, sem interação).
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Streaming</span>
+              <b>API MTProto</b> via Python — mensagens em tempo real com metadados (autoria, timestamp, encaminhamentos).
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Armazenamento</span>
+              <b>Elasticsearch + Kibana</b> — indexação contínua, enriquecimento e exploração.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Recorte temático</span>
+              Extração via script com normalização e deduplicação → <code>CSV / JSON</code>.
+            </div>
+            <div class="arch-out">
+              <b>Saída:</b> dois subsets &mdash; Vacinas (116.284) e Lei Rouanet (3.284).
+            </div>
+          </div>
+
+          <!-- FASE 02 · INDEXAÇÃO -->
+          <div class="arch-phase">
+            <div class="ap-head">
+              <span class="ap-num">2</span>
+              <span class="ap-title">Indexação semântica</span>
+            </div>
+            <div class="arch-box">
+              <span class="ab-tag">Estratégia</span>
+              <b>1 chunk = 1 post</b> — cada mensagem é a unidade mínima de indexação, citável e verificável.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Embeddings</span>
+              <b>text-embedding-3-large</b> (OpenAI) — projeção em espaço semântico de alta dimensão.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Metadados</span>
+              <code>message_id</code> · <code>chat_id</code> · <code>strict_date</code> · <code>type</code> · <code>chat_title</code>.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Base vetorial</span>
+              <b>ChromaDB</b> com algoritmo <b>HNSW</b> — busca aproximada de vizinhos em milissegundos.
+            </div>
+            <div class="arch-out">
+              <b>Saída:</b> índice vetorial persistente, navegável por similaridade e filtros estruturados.
+            </div>
+          </div>
+
+          <!-- FASE 03 · CONSULTA + GERAÇÃO -->
+          <div class="arch-phase accent">
+            <div class="ap-head">
+              <span class="ap-num">3</span>
+              <span class="ap-title">Consulta & geração</span>
+            </div>
+            <div class="arch-box">
+              <span class="ab-tag">Query</span>
+              Pergunta do pesquisador projetada no mesmo espaço vetorial → busca top-<em>N</em> ampla.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Adaptive-K</span>
+              Corte dinâmico no maior salto da curva de similaridade · piso <code>K=10</code> · teto <code>K=100</code> · buffer <code>B=5</code>.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Reranking</span>
+              <b>MMR</b> — equilibra relevância e diversidade, reduz duplicatas semânticas.
+            </div>
+            <div class="arch-arrow">▼</div>
+            <div class="arch-box">
+              <span class="ab-tag">Geração</span>
+              <em>System prompt</em> em <b>thread-of-thought</b> → LLM <em>(gemma3:12b · gpt-oss:120b · gpt-5-mini)</em>.
+            </div>
+            <div class="arch-out">
+              <b>Saída:</b> resposta ancorada em trechos citáveis, com rastreabilidade direta ao corpus.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="arch-streamlit">
+          <div>
+            <b>Interface Streamlit</b>
+            <div class="as-desc">Seleção de modelo, tema e base · histórico de conversa · prompts e logs auditáveis · exportação em Markdown.</div>
+          </div>
+          <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#c9d6e6;">Human-in-the-loop</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 · CORPUS -->
+    <section class="content">
+      <div class="slide-kicker">Corpus de teste</div>
+      <h2 class="slide-title">Dois subconjuntos temáticos do Telegram</h2>
+      <div class="slide-body">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-platform">Vacinas</div>
+            <div class="kpi-figures"><b>116.284</b> mensagens únicas
+              <span class="kpi-period">desde 2022 · queries com curinga <code style="font-size:15px;">vacin*</code> · maior e mais heterogêneo</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-platform">Lei Rouanet</div>
+            <div class="kpi-figures"><b>3.284</b> mensagens únicas
+              <span class="kpi-period">desde 2017 · variantes ortográficas · menor e mais concentrado em “guerra cultural”</span></div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:30px;">
+          A combinação dos dois recortes permite avaliar o desempenho do sistema sob <strong>alta complexidade narrativa</strong> (vacinas) e em <strong>cenário mais estabilizado</strong> (Rouanet) — testando a robustez sob variabilidade discursiva.
+        </div>
+        <div class="source-line">
+          Coleta restrita a grupos e canais públicos · posicionamento <em>lurker</em> (sem interação) · anonimização e não-redistribuição do corpus integral.
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 · ESCOLHAS DE DESIGN -->
+    <section class="content">
+      <div class="slide-kicker">Decisões de projeto</div>
+      <h2 class="slide-title">Três escolhas que sustentam o sistema</h2>
+      <div class="slide-body">
+        <div class="design-grid">
+          <div class="design-card">
+            <div class="d-tag">Indexação</div>
+            <div class="d-name">1 chunk = 1 post</div>
+            <div class="d-body">Cada mensagem do Telegram é uma unidade de indexação. Mensagens são curtas, autocontidas e contextualizadas — dividi-las geraria perda semântica; agregá-las introduziria ruído. Garante <strong>rastreabilidade direta</strong> e citação verificável.</div>
+          </div>
+          <div class="design-card">
+            <div class="d-tag">Recuperação</div>
+            <div class="d-name">Adaptive-K</div>
+            <div class="d-body">Em vez de um <em>K</em> fixo, o sistema identifica o <strong>maior salto na curva de similaridade</strong>:<br><code>K = argmax(s_i+1 − s_i)</code><br>Com piso (<code>K=10</code>) e teto (<code>K=100</code>) para evitar contextos pobres ou ruidosos.</div>
+          </div>
+          <div class="design-card">
+            <div class="d-tag">Reranking</div>
+            <div class="d-name">MMR · diversidade</div>
+            <div class="d-body">Maximal Marginal Relevance reordena o conjunto selecionado priorizando passagens <strong>igualmente relevantes mas informacionalmente distintas</strong> — reduz redundância gerada por reposts e reescritas.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · MODELOS -->
+    <section class="content">
+      <div class="slide-kicker">Avaliação comparativa</div>
+      <h2 class="slide-title">Três modelos com perfis deliberadamente distintos</h2>
+      <div class="slide-body">
+        <table class="model-table">
+          <thead>
+            <tr>
+              <th style="width:60px;">Modelo</th>
+              <th>Nome</th>
+              <th style="width:120px;">Parâmetros</th>
+              <th>Perfil de implantação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="m-id">A</span></td>
+              <td><span class="m-name">gemma3:12b</span></td>
+              <td>12B</td>
+              <td>Local, open-weight, via Ollama — reprodutibilidade e baixo custo operacional.</td>
+            </tr>
+            <tr>
+              <td><span class="m-id">B</span></td>
+              <td><span class="m-name">gpt-oss:120b-cloud</span></td>
+              <td>120B</td>
+              <td>Cloud, open-weight, via Ollama — preserva a lógica de pesos abertos com maior capacidade.</td>
+            </tr>
+            <tr>
+              <td><span class="m-id">C</span></td>
+              <td><span class="m-name">gpt-5-mini</span></td>
+              <td>—</td>
+              <td>Cloud, modelo comercial fechado, via OpenAI API — referência otimizada.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top:24px;font-size:19px;">
+          Cobre um espectro realista: <strong>“local e controlável”</strong> → <strong>“aberto e escalável”</strong> → <strong>“fechado e robusto”</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 · DIVISOR — AVALIAÇÃO -->
+    <section data-state="section" class="slide-section">
+      <div class="sec-num">03</div>
+      <h2>Avaliação do sistema</h2>
+      <div class="sec-rule"></div>
+      <div class="sec-desc">Dois blocos de perguntas, protocolo LLM-as-judge cego, e os principais resultados observados.</div>
+    </section>
+
+    <!-- 13 · PROTOCOLO -->
+    <section class="content">
+      <div class="slide-kicker">Estratégia de avaliação</div>
+      <h2 class="slide-title">Dois blocos complementares de perguntas</h2>
+      <div class="slide-body">
+        <div class="split">
+          <div class="col-text">
+            <span class="concept-term">Hermenêutico</span>
+            <p style="font-size:20px;">Análise narrativa: padrões discursivos recorrentes, enquadramentos ideológicos, metáforas, julgamentos morais e associações políticas no corpus.</p>
+            <div class="criteria-list" style="grid-template-columns:1fr;margin-top:12px;">
+              <div class="crit"><div class="crit-num">01</div><div><div class="crit-name">Acurácia temática</div></div></div>
+              <div class="crit"><div class="crit-num">02</div><div><div class="crit-name">Profundidade analítica</div></div></div>
+              <div class="crit"><div class="crit-num">03</div><div><div class="crit-name">Precisão das evidências</div></div></div>
+              <div class="crit"><div class="crit-num">04</div><div><div class="crit-name">Capacidade de síntese</div></div></div>
+              <div class="crit"><div class="crit-num">05</div><div><div class="crit-name">Sensibilidade política · ausência de alucinações</div></div></div>
+            </div>
+          </div>
+          <div class="col-text">
+            <span class="concept-term">Factual</span>
+            <p style="font-size:20px;">Recuperação precisa de evidência explícita: entidades nomeadas, números, datas, valores, links e descrições — incluindo negações e ausências.</p>
+            <div class="criteria-list" style="grid-template-columns:1fr;margin-top:12px;">
+              <div class="crit"><div class="crit-num">01</div><div><div class="crit-name">Precisão literal</div></div></div>
+              <div class="crit"><div class="crit-num">02</div><div><div class="crit-name">Cobertura factual</div></div></div>
+              <div class="crit"><div class="crit-num">03</div><div><div class="crit-name">Extração de entidades</div></div></div>
+              <div class="crit"><div class="crit-num">04</div><div><div class="crit-name">Sensibilidade a negações e ausências</div></div></div>
+              <div class="crit"><div class="crit-num">05</div><div><div class="crit-name">Números, percentuais, URLs · ausência de alucinações</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:22px;font-size:18px;">
+          <strong>LLM-as-judge cego:</strong> 3 rodadas com mapeamento rotacional dos modelos a posições A/B/C (sem nomes), juízes GPT-5 e Gemini Pro + avaliação humana com o mesmo protocolo. Total: <strong>13 tabelas de julgamento</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 · RESULTADOS HERMENÊUTICO -->
+    <section class="content">
+      <div class="slide-kicker">Resultados · bloco hermenêutico</div>
+      <h2 class="slide-title">Modelos B e C dominam o rigor interpretativo</h2>
+      <div class="slide-body">
+        <div class="figure">
+          <img src="assets/img/radar-hermeneutic.png" alt="Perfis radar do bloco hermenêutico para Vacina e Rouanet, por juiz">
+          <figcaption class="fig-caption">Figura 1 — Avaliação hermenêutica por juiz (ChatGPT/GPT-5, Gemini, Humano) para Vacina e Rouanet.</figcaption>
+        </div>
+        <div class="result-card accent" style="margin-top:14px;">
+          <div class="r-title">Padrão consistente entre temas e juízes</div>
+          <div class="r-body">Modelo <strong>C (gpt-5-mini)</strong> apresenta os perfis mais altos, com <strong>B (gpt-oss:120b)</strong> muito próximo. <strong>A (gemma3:12b)</strong> fica atrás sobretudo em profundidade analítica, síntese e precisão evidencial.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15 · RESULTADOS FACTUAL -->
+    <section class="content">
+      <div class="slide-kicker">Resultados · bloco factual</div>
+      <h2 class="slide-title">Separação mais nítida entre A e os modelos maiores</h2>
+      <div class="slide-body">
+        <div class="figure">
+          <img src="assets/img/radar-factual.png" alt="Perfis radar do bloco factual para Vacina e Rouanet, por juiz">
+          <figcaption class="fig-caption">Figura 2 — Avaliação factual por juiz. Modelos B e C convergem no topo; Modelo A perde fidelidade em precisão literal, cobertura e detecção de negações.</figcaption>
+        </div>
+        <div class="result-card accent" style="margin-top:14px;">
+          <div class="r-title">O <em>gap</em> aumenta quando a tarefa exige ancoragem literal</div>
+          <div class="r-body">Modelos B e C exibem perfis uniformemente altos em precisão literal, extração de entidades e sensibilidade a negações. O Modelo A, embora ainda útil para leitura exploratória, mostra <strong>fragilidades em critérios de extração e verificação</strong>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 · HEATMAP / SÍNTESE -->
+    <section class="content">
+      <div class="slide-kicker">Síntese · estabilidade entre juízes</div>
+      <h2 class="slide-title">Ordenação consistente sob diferentes severidades</h2>
+      <div class="slide-body">
+        <div class="figure">
+          <img src="assets/img/heatmap.png" alt="Heatmap das médias gerais por juiz, subset e modelo">
+          <figcaption class="fig-caption">Figura 3 — Médias globais por juiz × subset × modelo. Cores mais frias indicam pontuações maiores.</figcaption>
+        </div>
+        <div class="split" style="grid-template-columns:1fr 1fr;gap:22px;margin-top:8px;">
+          <div class="result-card">
+            <div class="r-title">Direção dos resultados é estável</div>
+            <div class="r-body">Mesmo com diferenças absolutas (Gemini é mais generoso; ChatGPT/GPT-5 e humano, mais severos), a <strong>ordenação C ≳ B ≫ A se mantém</strong> em todas as combinações.</div>
+          </div>
+          <div class="result-card">
+            <div class="r-title">Vacinas amplificam as diferenças</div>
+            <div class="r-body">O corpus de vacinas — maior e mais heterogêneo — separa melhor os modelos. Em Rouanet, com enquadramentos mais estabilizados, os perfis tendem a convergir.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 · LIMITAÇÕES E CONTRIBUIÇÃO -->
+    <section class="content">
+      <div class="slide-kicker">Conclusão</div>
+      <h2 class="slide-title">O que o Social-RAG é — e o que não é</h2>
+      <div class="slide-body">
+        <div class="split" style="grid-template-columns:1fr 1fr;gap:32px;margin-top:14px;">
+          <div class="col-text">
+            <div class="result-card accent">
+              <div class="r-title">Não é instrumento de mensuração</div>
+              <div class="r-body">Não foi projetado para contagem exata, frequência lexical ou estatística clássica — <em>regex</em> e NLP tradicional fazem isso melhor.</div>
+            </div>
+            <div class="result-card">
+              <div class="r-title">É mediação qualitativa</div>
+              <div class="r-body">Apoia exploração iterativa de padrões discursivos, enquadramentos narrativos e usos sociais da linguagem — mais próximo da leitura orientada por problema do que da extração automatizada.</div>
+            </div>
+          </div>
+          <div class="col-text">
+            <div class="result-card">
+              <div class="r-title">Trade-off observado</div>
+              <div class="r-body">Modelos menores e locais sustentam leituras exploratórias, mas exigem cautela em extração literal e atribuição de evidência.</div>
+            </div>
+            <div class="result-card">
+              <div class="r-title">Próximos passos</div>
+              <div class="r-body">Escalabilidade · avaliação em domínios temáticos adicionais · integração de <strong>grafos de conhecimento</strong> para enriquecer a contextualização.</div>
+            </div>
+          </div>
+        </div>
+        <div class="source-line" style="margin-top:24px;">
+          Repositório · <a href="https://github.com/LABHDUFBA/social-rag">github.com/LABHDUFBA/social-rag</a> · arquivado em Zenodo (<a href="https://doi.org/10.5281/zenodo.18601216">DOI 10.5281/zenodo.18601216</a>).
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 · ENCERRAMENTO -->
+    <section data-state="section" class="slide-end">
+      <h2>Obrigado!</h2>
+      <div class="end-rule"></div>
+      <div class="end-contacts">
+        <b>Leonardo Nascimento</b> — leofn3@gmail.com<br>
+        <b>Eric Brasil</b> · <b>Arthur Lima</b> · <b>Gabriel Andrade</b><br>
+        <b>Ricardo Sodré Andrade</b> · <b>Tarssio Barreto</b>
+      </div>
+      <div class="end-logos"><img src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA"></div>
+    </section>
+
+  </div>
+
+  <footer class="deck-footer">
+    <div class="foot-left"><b>Social-RAG</b> — RAG para pesquisa em ciências sociais computacionais</div>
+    <img class="foot-logos" src="assets/logos/labhd_no_white_frame.png" alt="L4BHD/UFBA">
+  </footer>
+</div>
+
+<script src="vendor/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 1.6,
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    controlsTutorial: false
+  });
+
+  function updateChrome() {
+    const s = Reveal.getCurrentSlide();
+    const bare = s && (s.classList.contains('slide-cover') ||
+                       s.classList.contains('slide-section') ||
+                       s.classList.contains('slide-end'));
+    document.querySelector('.reveal').classList.toggle('no-chrome', !!bare);
+  }
+  Reveal.on('ready', updateChrome);
+  Reveal.on('slidechanged', updateChrome);
+</script>
+</body>
+</html>
