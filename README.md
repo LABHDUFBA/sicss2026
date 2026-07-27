@@ -40,7 +40,7 @@ Total: 25 slides, incluindo a capa. A numeração visível começa depois dela (
 
 ## Sistema visual
 
-A escala tipográfica usa tokens por função: capa, abertura de seção, título de slide, subtítulo, corpo, título de box, texto de box, nota, metadado e rótulo. Todos os conjuntos de boxes usam `--box-gap: 24px`.
+A escala tipográfica usa tokens por função: capa, abertura de seção, título de slide, subtítulo, corpo, título de box, texto de box, nota, metadado e rótulo. Todos os conjuntos de boxes usam `--box-gap: 24px`. Os boxes horizontais de síntese usam a mesma distância de 24px em relação ao conjunto anterior, fonte de 23px e padding de 22px × 26px.
 
 ## Fontes principais
 
