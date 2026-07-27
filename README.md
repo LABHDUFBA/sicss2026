@@ -38,6 +38,10 @@ Total: 25 slides, incluindo a capa. A numeração visível começa depois dela (
 - `assets/`: logos e figuras locais
 - `sources/`: decks recebidos, preservados para rastreabilidade
 
+## Sistema visual
+
+A escala tipográfica usa tokens por função: capa, abertura de seção, título de slide, subtítulo, corpo, título de box, texto de box, nota, metadado e rótulo. Todos os conjuntos de boxes usam `--box-gap: 24px`.
+
 ## Fontes principais
 
 - Social-RAG: https://github.com/LABHDUFBA/social-rag
