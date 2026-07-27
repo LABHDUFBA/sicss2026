@@ -12,19 +12,22 @@
 
   const pad = n => String(n).padStart(2, '0');
 
+  function fitDeck() {
+    const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    document.documentElement.style.setProperty('--deck-scale', String(scale));
+  }
+
   function slideTemplate(slide, index) {
     return `
       <article class="slide ${slide.className || ''}" id="${slide.id}" data-index="${index}" data-source="${slide.source || 'SICSS 2026'}" aria-label="Slide ${index + 1}: ${slide.title}">
         <div class="slide-grid" aria-hidden="true"></div>
         <header class="slide-head">
           <p class="eyebrow">${slide.kicker || ''}</p>
-          <p class="source-tag">slide ${index + 1}/${window.SLIDES.length}</p>
         </header>
         <div class="slide-body">${slide.html}</div>
         <footer class="slide-foot">
           <span>SICSS Brasil · 28 jul 2026</span>
           <span class="section-name">${slide.section || ''}</span>
-          <span>${pad(index + 1)} / ${pad(window.SLIDES.length)}</span>
         </footer>
       </article>`;
   }
@@ -77,6 +80,7 @@
   prev.addEventListener('click', () => go(current - 1));
   next.addEventListener('click', () => go(current + 1));
   window.addEventListener('hashchange', () => go(getInitial(), false));
+  window.addEventListener('resize', fitDeck);
   window.addEventListener('keydown', event => {
     if (!overview.hidden && event.key === 'Escape') { overview.hidden = true; return; }
     if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); go(current + 1); }
@@ -88,5 +92,6 @@
   });
 
   render();
+  fitDeck();
   go(getInitial(), false);
 })();
