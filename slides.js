@@ -8,6 +8,10 @@ window.SLIDES = [
     html: `<h2>O percurso da apresentação</h2><div class="three-col agenda"><div class="card accent-card"><span class="step-number">01</span><h3>RAG e Social-RAG</h3><p>Recuperação semântica, geração ancorada, arquitetura do pipeline e avaliação comparativa.</p></div><div class="card"><span class="step-number">02</span><h3>Agentes na pesquisa</h3><p>Modelos com memória e ferramentas, fluxos de trabalho e agência distribuída.</p></div><div class="card"><span class="step-number">03</span><h3>Impactos epistemológicos</h3><p>Crítica dos dados e das ferramentas, posições do humano no ciclo e limites da delegação.</p></div></div><p class="lead agenda-thesis">Do corpus à resposta; da resposta à ação; da ação à responsabilidade.</p>`
   },
   {
+    id: 'pesquisa-em-escala', title: 'A pesquisa do LABHDUFBA em escala', kicker: 'Introdução · o problema de escala', section: 'Abertura', source: 'pineb · slide 15',
+    html: `<h2>A pesquisa do LABHDUFBA em escala</h2><p class="lead">Ecossistema multiplataforma de desinformação e radicalização no Brasil: Telegram, YouTube, Instagram, WhatsApp e outras infraestruturas.</p><div class="metrics"><div class="metric"><b>+70M</b><span>mensagens · 2015–2025</span></div><div class="metric"><b>5M</b><span>imagens e vídeos</span></div><div class="metric"><b>3M</b><span>links do YouTube</span></div><div class="metric"><b>30 TB</b><span>de dados</span></div></div><p>Essa escala impôs o desenvolvimento de ferramentas e métodos capazes de articular exploração computacional, rastreabilidade e interpretação qualitativa.</p>`
+  },
+  {
     id: 'secao-rag', title: 'RAG: definição e estrutura', kicker: '01 · Retrieval-Augmented Generation', section: 'RAG', className: 'section-slide', source: 'social-rag · slide 5',
     html: `<div class="section-number">01</div><div><div class="rule"></div><h2>RAG: definição e estrutura</h2><p class="lead">Como ancorar a geração de linguagem em evidências recuperáveis.</p></div>`
   },
@@ -59,10 +63,7 @@ window.SLIDES = [
     id: 'resultado-consolidado', title: 'Estabilidade entre juízes', kicker: 'Síntese · avaliação', section: 'RAG', source: 'social-rag · slide 17',
     html: `<h2>A ordenação resiste a severidades distintas</h2><div class="figure-layout"><div class="figure-frame"><img src="assets/img/heatmap.png" alt="Mapa de calor consolidado das avaliações"></div><div class="figure-notes"><div class="finding"><b>Direção estável</b><p>A ordenação C ≳ B ≫ A permanece entre juízes e subconjuntos.</p></div><div class="finding"><b>Escalas diferentes</b><p>Gemini julga de modo mais generoso; GPT-5 e humano são mais severos.</p></div><div class="finding"><b>Vacinas discriminam mais</b><p>O corpus maior e heterogêneo separa melhor os modelos.</p></div></div></div>`
   },
-  {
-    id: 'ferramentas-lab', title: 'Do texto à estrutura', kicker: 'Aplicação · ferramentas em ação', section: 'Agentes', source: 'pineb · slide 12',
-    html: `<h2>Do texto à estrutura: ferramentas do LABHDUFBA</h2><div class="four-col"><div class="card"><h3>NER</h3><p>Identifica pessoas, organizações, lugares, datas e eventos.</p></div><div class="card"><h3>Topic modelling</h3><p>Agrupa associações lexicais para explorar temas latentes.</p></div><div class="card"><h3>Knowledge graph</h3><p>Modela entidades e relações para mapear estruturas semânticas.</p></div><div class="card accent-card"><h3>RAG</h3><p>Gera respostas condicionadas por uma base documental rastreável.</p></div></div><p class="lead" style="margin-top:38px">O agente articula essas ferramentas em fluxos de trabalho, mas não elimina suas diferenças metodológicas.</p>`
-  },
+
   {
     id: 'secao-agentes', title: 'Agentes na pesquisa', kicker: '04 · LLMs com ferramentas', section: 'Agentes', className: 'section-slide', source: 'pineb · slide 13',
     html: `<div class="section-number">04</div><div><div class="rule"></div><h2>Agentes na pesquisa</h2><p class="lead">O que muda quando o modelo ganha ferramentas, memória e capacidade de agir em ciclos.</p></div>`
@@ -71,10 +72,7 @@ window.SLIDES = [
     id: 'o-que-sao-agentes', title: 'O que são agentes?', kicker: 'Fundamentos', section: 'Agentes', source: 'pineb · slide 14',
     html: `<h2>Um agente planeja, age e revê resultados</h2><div class="architecture"><div class="arch-box"><h3>Controle</h3><p>Memória, base de conhecimento, planejamento e critérios de decisão.</p><div class="pills"><span class="pill">storage</span><span class="pill">planning</span><span class="pill">reasoning</span></div></div><div class="arch-arrow">⇄</div><div class="arch-box core"><h3>LLM-agente</h3><p>Modelo de linguagem + ferramentas + memória + ciclo de feedback.</p><div class="pills"><span class="pill">percepção</span><span class="pill">ação</span><span class="pill">ferramentas</span><span class="pill">feedback</span></div><p class="small" style="margin-top:34px"><strong>Humano:</strong> delega · supervisiona · valida.</p></div></div><p class="small muted">Agentes precedem os LLMs. A fusão LLM + agente redefine alcance, interface e distribuição da agência.</p>`
   },
-  {
-    id: 'pesquisa-em-escala', title: 'A pesquisa do LABHDUFBA em escala', kicker: 'Aplicação', section: 'Agentes', source: 'pineb · slide 15',
-    html: `<h2>A pesquisa do LABHDUFBA em escala</h2><p class="lead">Ecossistema multiplataforma de desinformação e radicalização no Brasil: Telegram, YouTube, Instagram, WhatsApp e outras infraestruturas.</p><div class="metrics"><div class="metric"><b>+70M</b><span>mensagens · 2015–2025</span></div><div class="metric"><b>5M</b><span>imagens e vídeos</span></div><div class="metric"><b>3M</b><span>links do YouTube</span></div><div class="metric"><b>30 TB</b><span>de dados</span></div></div><p>Coleta, classificação, recuperação e síntese operam sob coordenação de equipes qualitativas e quantitativas, em três fases de pesquisa entre 2021 e 2027.</p>`
-  },
+
   {
     id: 'agencia-distribuida', title: 'Agência distribuída', kicker: 'Tese central', section: 'Agentes', source: 'pineb · slide 16',
     html: `<h2>Agência distribuída</h2><div class="two-col"><div class="quote"><p>O pesquisador não é substituído. A agência se redistribui entre pessoas, modelos, ferramentas e infraestruturas.</p></div><div class="cards"><div class="card accent-card"><h3>Delegação situada</h3><p>Escopo, critérios e ferramentas são definidos para uma tarefa concreta.</p></div><div class="card"><h3>Guardrails</h3><p>Pontos de validação restringem o que pode avançar sem revisão.</p></div><div class="card"><h3>Responsabilidade</h3><p>Autoria e prestação de contas permanecem humanas.</p></div></div></div>`

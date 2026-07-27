@@ -3,7 +3,6 @@
 
   const deck = document.querySelector('#deck');
   const overview = document.querySelector('#overview');
-  const counter = document.querySelector('#counter');
   const progress = document.querySelector('#progressBar');
   const prev = document.querySelector('#prev');
   const next = document.querySelector('#next');
@@ -23,6 +22,7 @@
         <div class="slide-grid" aria-hidden="true"></div>
         <header class="slide-head">
           <p class="eyebrow">${slide.kicker || ''}</p>
+          ${index > 0 ? `<p class="slide-number">slide ${index}/${window.SLIDES.length - 1}</p>` : ''}
         </header>
         <div class="slide-body">${slide.html}</div>
         <footer class="slide-foot">
@@ -59,7 +59,6 @@
       slide.classList.toggle('active', i === current);
       slide.setAttribute('aria-hidden', i === current ? 'false' : 'true');
     });
-    counter.textContent = `${pad(current + 1)} / ${pad(window.SLIDES.length)}`;
     progress.style.width = `${((current + 1) / window.SLIDES.length) * 100}%`;
     prev.disabled = current === 0;
     next.disabled = current === window.SLIDES.length - 1;
